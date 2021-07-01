@@ -6,11 +6,15 @@ module Prestashop
       model :customer
 
       def self.authorize(id, password)
-        result = Client.read self.resource, id, 'filter[passwd]' => password
-        result = {self.resource => {self.model => result[:customer]}} unless result.nil?
-        result = handle_result result, display: 'full'
+        options = {
+          'filter[passwd]' => password,
+          display: 'full'
+        }
+        result = Client.read self.resource, id, options
+        result = {self.resource => {self.model => result[self.resource]}} unless result.nil?
+        result = handle_result result, options
         auth_user = result ? result.first : nil
-        return nil if auth_user.nil? || auth_user[:successfull][:val] != 'true'
+        return nil if auth_user.nil? || auth_user[:successful][:val] != 1
         auth_user
       end
     end
